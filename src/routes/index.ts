@@ -27,7 +27,12 @@ export default [
                         component: './IndustryDetail',
                     }
                 ]
-            }
+            },
+            {
+                path: '/exercise',
+                name: 'Exercise',
+                component: './Exercise',
+            },
         ]
     },
     

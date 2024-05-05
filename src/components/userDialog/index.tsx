@@ -1,37 +1,71 @@
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Tabs, Card } from 'antd';
-import { createForm  } from '@formily/core';
+import { createForm, Field, FormPathPattern, GeneralField, onFieldReact } from '@formily/core';
 import {
     Input,
     Form,
     FormItem,
     Submit,
+    Select
 } from '@formily/antd'
-
+import { action } from '@formily/reactive'
 import { createSchemaField } from '@formily/react';
 import { Password } from '@formily/antd';
 import { User } from '@/services/userApi';
-import { useEffect } from 'react';
-import { getAllIndustriesApi } from '@/services/industryApi';
+import { useEffect, useState } from 'react';
+import { getAllIndustriesApi, Industry } from '@/services/industryApi';
+import { getJobsByIndustryIdApi, Job } from '@/services/jobApi';
 
 const SchemaField = createSchemaField({
     components: {
         FormItem,
         Input,
         Password,
+        Select
     },
 })
 const loginForm = createForm();
-const registerForm = createForm();
+const useAsyncGetJobsByIndustryId = (
+    pattern: FormPathPattern,
+    service: (field: Field) => Promise<{ label: string; value: number }[]>
+  ) => {
+    onFieldReact(pattern, (field: any) => {
+      field.loading = true
+      service(field).then(
+        action.bound((data) => {
+          field.dataSource = data
+          field.loading = false
+        })
+      )
+    })
+  }
+const registerForm = createForm({
+    effects: () => {
+        useAsyncGetJobsByIndustryId('jobId', async (field) => { 
+            const industryId = field.query('industryId').get('value');
+            if (!industryId) return []
+            return new Promise((resolve) => {
+                getJobsByIndustryIdApi(industryId).then((res) => {
+                    resolve(res.data.map((job: Job) => ({
+                        label: job.jobName,
+                        value: job.id
+                    })))
+                })
+            })
+        })
+    }
+});
 
 const UserDialog = (props: {
     login: (loginForm: User) => Promise<void>;
     register: (registerForm: User) => Promise<void>;
 }) => {
-    const {login, register} = props;
-    useEffect(()=>{
-        getAllIndustriesApi().then(res=>{
+    const [industries, setIndusties] = useState<Industry[]>([]);
+    const { login, register } = props;
+    useEffect(() => {
+        getAllIndustriesApi().then(res => {
             console.log(res);
+            setIndusties(res.data);
         })
     }, [])
     return (
@@ -41,7 +75,7 @@ const UserDialog = (props: {
                     <Form
                         form={loginForm}
                         onAutoSubmit={login}
-                        labelCol={ 4 }
+                        labelCol={4}
                     >
                         <SchemaField>
                             <SchemaField.String
@@ -79,6 +113,7 @@ const UserDialog = (props: {
                     <Form
                         form={registerForm}
                         onAutoSubmit={register}
+                        labelCol={4}
                     >
                         <SchemaField>
                             <SchemaField.String
@@ -105,6 +140,24 @@ const UserDialog = (props: {
                                     prefix: <LockOutlined className="site-form-item-icon" />,
                                     placeholder: '请输入密码',
                                 }}
+                            />
+                            <SchemaField.String
+                                name="industryId"
+                                title="行业"
+                                required
+                                x-decorator="FormItem"
+                                x-component="Select"
+                                enum={industries.map((industry) => ({
+                                    label: industry.industryName,
+                                    value: industry.id,
+                                }))}
+                            />
+                             <SchemaField.String
+                                name="jobId"
+                                title="岗位"
+                                required
+                                x-decorator="FormItem"
+                                x-component="Select"
                             />
                         </SchemaField>
                         <Submit block size="large">

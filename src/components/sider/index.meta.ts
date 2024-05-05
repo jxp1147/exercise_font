@@ -8,5 +8,9 @@ export const menus = [
     {
         path: '/industry',
         name: '行业',
+    },
+    {
+        path: '/exercise',
+        name: '题目',
     }
 ]

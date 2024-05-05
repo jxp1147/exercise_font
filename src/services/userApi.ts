@@ -4,6 +4,9 @@ export interface User {
     id?: number;
     userName: string;
     password: string;
+    industryId?: number;
+    jobId?: number;
+    userTypeId?: number;
 }
 export const loginApi = async (user: User) => {
     return await request('/api/user/login', {
@@ -23,6 +26,14 @@ export const getUsers = async () => {
             currentPage: 1,
             pageSize: 10,
         },
+    });
+};
+
+export const registerApi = async (user: User) => {
+    user.password = md5(user.password);
+    return await request('/api/user/register', {
+        method: 'post',
+        data: user,
     });
 };
 

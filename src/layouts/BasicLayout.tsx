@@ -3,7 +3,7 @@ import { Layout, Modal } from 'antd';
 import { Outlet } from '@umijs/max';
 import UserDialog from '@/components/userDialog';
 import './basicLayout.less';
-import { loginApi, User } from '@/services';
+import { loginApi, registerApi, User } from '@/services';
 import BasicLayoutSider from '@/components/sider';
 
 const { Header, Content, Footer, Sider } = Layout;
@@ -13,22 +13,24 @@ const BasicLayout: React.FC = () => {
         setLoginDialogVisible(true);
     }
 
-    const login = async (user: User) => {
-        const response = await loginApi(user as User);
+    const login = async (userParams: User) => {
+        const response = await loginApi(userParams as User);
         if (response.code === 200) {
-            const { token } = response.data;
+            const { token, user} = response.data;
             localStorage.setItem('token', token);
+            localStorage.setItem('user', JSON.stringify(user));
             setLoginDialogVisible(false);
         }
     };
 
     const register = async (user: User) => {
-        const response = await loginApi(user);
+        const response = await registerApi(user);
         if (response.code === 200) {
-            const { token } = response.data;
-            localStorage.setItem('token', token);
-            setLoginDialogVisible(false);
-        }
+            login({
+                userName: user.userName,
+                password: user.password
+            })
+        }   
     };
 
     return (

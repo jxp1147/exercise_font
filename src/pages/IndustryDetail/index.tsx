@@ -92,7 +92,6 @@ const IndustryDetail: React.FC = () => {
             }
         });
     }
-    console.log('azzzzzzzz',jobEditForm.values.jobName)
     return (
         <div className="p-4">
             <Form
