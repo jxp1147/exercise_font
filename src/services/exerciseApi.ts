@@ -1,5 +1,15 @@
 import request from "./request";
 
+
+export interface IExercise {
+    id?: string;
+    exerciseContent?: string;
+    ownerId?: string;
+    exerciseAnswer?: string;
+    industryId?: number;
+    jobId?: number;
+}
+
 export const getExercisesByPageDataApi = async () => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     return await request('/api/exercise/getExercisesByPageData', {
@@ -11,5 +21,16 @@ export const getExercisesByPageDataApi = async () => {
             },
             id: user.id
         },
+    });
+};
+
+export const addExerciseApi = async (exercise: IExercise) => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    exercise.ownerId = user.id;
+    exercise.industryId = user.industryId;
+    exercise.jobId = user.jobId;
+    return await request('/api/exercise/addExercise', {
+        method: 'post',
+        data: exercise,
     });
 };

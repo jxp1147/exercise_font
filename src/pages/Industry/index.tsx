@@ -33,7 +33,7 @@ const Industry: React.FC = () => {
   useEffect(() => {
     getAllIndustriesApi().then(res => {
       if (res.code === 200) {
-        setIndustries(res.data.data);
+        setIndustries(res.data);
       }
     })
   }, [refreshIndustries])

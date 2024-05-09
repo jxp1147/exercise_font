@@ -1,6 +1,6 @@
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Tabs, Card } from 'antd';
-import { createForm, Field, FormPathPattern, GeneralField, onFieldReact } from '@formily/core';
+import { createForm, Field, FormPathPattern, onFieldReact } from '@formily/core';
 import {
     Input,
     Form,

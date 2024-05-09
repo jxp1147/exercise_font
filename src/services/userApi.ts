@@ -2,8 +2,8 @@ import request from './request';
 import md5 from 'md5';
 export interface User {
     id?: number;
-    userName: string;
-    password: string;
+    userName?: string;
+    password?: string;
     industryId?: number;
     jobId?: number;
     userTypeId?: number;
@@ -30,9 +30,23 @@ export const getUsers = async () => {
 };
 
 export const registerApi = async (user: User) => {
-    user.password = md5(user.password);
+    if (user.password) {
+        user.password = md5(user.password);
+    }
     return await request('/api/user/register', {
         method: 'post',
+        data: user,
+    });
+};
+
+export const updateUserApi = async (user: User) => {
+    if (user.password) {
+        user.password = md5(user.password);
+    }
+    const userLocal = JSON.parse(localStorage.getItem('user') || '{}');
+    user.id = userLocal.id;
+    return await request('/api/user/update', {
+        method: 'put',
         data: user,
     });
 };
