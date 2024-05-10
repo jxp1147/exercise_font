@@ -58,6 +58,7 @@
    errorHandler, // 默认错误处理
  });
  request.interceptors.request.use((url: string, options: any) => {
+  console.log('aaaaaa', options);
    const token = window.localStorage.getItem('token') || '';
    if (token) {
      let headers;

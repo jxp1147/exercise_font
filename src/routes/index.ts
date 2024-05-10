@@ -33,6 +33,11 @@ export default [
                 name: 'Exercise',
                 component: './Exercise',
             },
+            {
+                path: '/test',
+                name: 'Test',
+                component: './Test',
+            },
         ]
     },
     

@@ -21,14 +21,16 @@ const SchemaField = createSchemaField({
 const Industry: React.FC = () => {
   const [industries, setIndustries] = useState<any[]>([]);
   const [refreshIndustries, setRefreshIndustries] = useState({});
-  columns.push({
-    title: '操作',
-    dataIndex: 'operation',
-    key: 'operation',
-    render:  (text, record) => <a onClick={() => {
-      history.push("./industry/" + record.id)
-    }}>Detail</a>,
-  });
+  const industryColumns = [
+    ...columns,
+    {
+      title: '操作',
+      dataIndex: 'operation',
+      key: 'operation',
+      render:  (text: string, record: any) => <a onClick={() => {
+        history.push("./industry/" + record.id)
+      }}>Detail</a>,
+    }];
   const industryForm = createForm();
   useEffect(() => {
     getAllIndustriesApi().then(res => {
@@ -48,7 +50,7 @@ const Industry: React.FC = () => {
   return (
     <>
       <div className='p-4'>
-        <Table dataSource={industries} columns={columns} rowKey="id" />
+        <Table dataSource={industries} columns={industryColumns} rowKey="id" />
       </div>
       <div className="w-30">
       <Form

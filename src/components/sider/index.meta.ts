@@ -12,5 +12,9 @@ export const menus = [
     {
         path: '/exercise',
         name: '题目',
+    },
+    {
+        path: '/test',
+        name: 'test',
     }
 ]

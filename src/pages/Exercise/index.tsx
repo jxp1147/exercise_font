@@ -2,7 +2,9 @@ import { addExerciseApi, IExercise, getExercisesByPageDataApi } from "@/services
 import { FormItem, Input, Submit, Form } from "@formily/antd";
 import { createForm } from "@formily/core";
 import { createSchemaField } from "@formily/react";
+import { Table } from "antd";
 import { useEffect, useState } from "react";
+import { columns } from "./index.mate";
 const SchemaField = createSchemaField({
   components: {
     FormItem,
@@ -12,6 +14,7 @@ const SchemaField = createSchemaField({
 const Exercise: React.FC = () => {
   const [refreshExercises, setRefreshExercises] = useState({});
   const addExerciseForm = createForm();
+  const [exercises, setExercises] = useState<IExercise[]>([]);
   const addExercise = async (exercise: IExercise) => {
     const response = await addExerciseApi(exercise);
     if (response.code === 200) {
@@ -19,14 +22,26 @@ const Exercise: React.FC = () => {
     }
 
   }
+  const exerciseColumns = [
+    ...columns, {
+      title: '操作',
+      key: 'action',
+      render: (text, record) => (
+        <a onClick={() => {
+          setRefreshExercises({})
+        }}>删除</a>
+      ),
+    }
+  ]
   useEffect(() => {
     getExercisesByPageDataApi().then(res => {
       console.log(res);
+      setExercises(res.data)
     })
   }, [refreshExercises])
   return (
     <div className='p-4'>
-
+      <Table dataSource={exercises} columns={exerciseColumns} rowKey="id"/>
       <div>-----------------------------</div>
       <Form
         form={addExerciseForm}

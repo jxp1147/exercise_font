@@ -34,3 +34,17 @@ export const addExerciseApi = async (exercise: IExercise) => {
         data: exercise,
     });
 };
+
+export const getExerciseByIdApi = async (id: string) => {
+    return await request('/api/exercise/' + id, {
+        method: 'get',
+    });
+};
+
+export const answerExerciseApi = async (answerForm: FormData) => {
+    return await request('/api/exercise/answer', {
+        method: 'post',
+        data: answerForm,
+        requestType: 'form',
+    });
+};
