@@ -5,8 +5,9 @@ import { Table } from "antd";
 import { useEffect, useState } from "react";
 import { columns } from "../Exercise/index.mate";
 import { createSchemaField } from "@formily/react";
-import { FormItem, Form, Submit } from "@formily/antd";
+import { FormItem, Form } from "@formily/antd";
 import { createForm } from "@formily/core";
+import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 const SchemaField = createSchemaField({
     components: {
         FormItem,
@@ -14,6 +15,8 @@ const SchemaField = createSchemaField({
     },
 })
 const answerCoreForm = createForm();
+let gptAnswerTimer: NodeJS.Timeout;
+let answerTimer: NodeJS.Timeout;
 const Test: React.FC = () => {
     const [refreshExercises, setRefreshExercises] = useState({});
     const [exercises, setExercises] = useState<IExercise[]>([]);
@@ -32,7 +35,6 @@ const Test: React.FC = () => {
     ]
     useEffect(() => {
         getExercisesByPageDataApi().then(res => {
-            console.log(res);
             setExercises(res.data)
             setExerciseId(res.data[0].id)
         })
@@ -53,8 +55,10 @@ const Test: React.FC = () => {
     const [gptIndex, setGptIndex] = useState(0);
     const [showGptAnswer, setShowGptAnswer] = useState(false);
     const [gptGenderAnswer, setGptGenderAnswer] = useState('');
+    const [btnDisabled, setBtnDisabled] = useState(false);
     const answerExercise = () => {
         setShowAnswer(true);
+        setBtnDisabled(true);
         const userAnswer = answerCoreForm.values.userAnswer;
         const answerForm = new FormData();
         answerForm.append('answer', userAnswer);
@@ -64,38 +68,73 @@ const Test: React.FC = () => {
                 if (index === (exercise?.exerciseAnswer as string).length) {
                     setShowGptAnswer(true)
                 }
-                console.log(res);
                 setGptGenderAnswer(res.data)
             }
         })
     }
     useEffect(() => {
         const text = exercise?.exerciseAnswer || '';
-        let answerTimer: NodeJS.Timeout;
         if (index < text.length) {
             answerTimer = setTimeout(() => {
                 if (showAnswer) {
+                    setBtnDisabled(true);
                     setDisplayText(prevText => prevText + text.charAt(index));
                     setIndex(prevIndex => prevIndex + 1);
-                } 
+                }
             }, 20);
         } else {
             if (answerTimer) {
                 clearTimeout(answerTimer)
+                setBtnDisabled(false);
             }
             setShowGptAnswer(true)
         }
     }, [index, exercise?.exerciseAnswer, showAnswer]);
 
+    const refreshShow = () =>{
+        setShowAnswer(false);
+        setShowGptAnswer(false);
+        setGptGenderAnswer('');
+        setDisplayText('');
+        setGptText('');
+        setGptIndex(0);
+        setIndex(0);
+        answerCoreForm.setValues({userAnswer: ' '});
+    }
+
+    const nextOne = () => {
+        refreshShow();
+        let nextIndex = exercises.findIndex(item => item.id === exerciseId);
+        if (nextIndex === -1 || nextIndex === exercises.length - 1) {
+            nextIndex = 0;
+        } else {
+            nextIndex++;
+        }
+        setExerciseId(exercises[nextIndex].id);
+    }
+    const preOne = () => {
+        refreshShow();
+        let preIndex = exercises.findIndex(item => item.id === exerciseId);
+        if (preIndex === -1) {
+            preIndex = 0;
+        } else if (preIndex === 0) {
+            preIndex = exercises.length - 1;
+        } else {
+            preIndex--;
+        }
+        setExerciseId(exercises[preIndex].id);
+    }
+
     useEffect(() => {
-        let gptAnswerTimer: NodeJS.Timeout;
         if (showGptAnswer && gptIndex < gptGenderAnswer.length) {
-            setTimeout(() => {
+            gptAnswerTimer = setTimeout(() => {
+                setBtnDisabled(true);
                 setGptText(prevText => prevText + gptGenderAnswer.charAt(gptIndex));
                 setGptIndex(prevIndex => prevIndex + 1);
             }, 20);
         } else {
             if (gptAnswerTimer) {
+                setBtnDisabled(false);
                 clearTimeout(gptAnswerTimer);
             }
         }
@@ -121,8 +160,10 @@ const Test: React.FC = () => {
                                 }}
                             />
                         </SchemaField>
-                        <div className="flex flex-row-reverse mt-4">
-                            <Button type="primary" onClick={answerExercise}>确认</Button>
+                        <div className="flex flex-row-reverse gap-2 mt-4">
+                            <Button type="primary" onClick={answerExercise} disabled = { btnDisabled }>确认</Button>
+                            <Button type="primary" icon={<RightOutlined /> } disabled = { btnDisabled } onClick={nextOne}></Button>
+                            <Button type="primary" icon={<LeftOutlined />} disabled = { btnDisabled } onClick={preOne}></Button>
                         </div>
                     </Form>
                 </div>
@@ -134,6 +175,7 @@ const Test: React.FC = () => {
                     <h5>gpt答案：</h5>
                     {showGptAnswer && <div>{gptText}</div>}
                 </div>
+
 
             </div>
             <div className="w-1/3">
